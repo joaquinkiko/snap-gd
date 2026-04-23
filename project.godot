@@ -14,6 +14,10 @@ config/name="SnapGd"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+SnapGd="*res://addons/snap-gd/global/snap_gd.gd"
+
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/snap-gd/plugin.cfg")

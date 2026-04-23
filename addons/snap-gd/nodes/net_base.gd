@@ -17,8 +17,14 @@ func _init() -> void:
 	for n in _BUFFER_MASK:
 		_buffer[n] = Snapshot.new()
 
+func _enter_tree() -> void:
+	SnapGd.register_node(self)
+
+func _exit_tree() -> void:
+	SnapGd.deregister_node(self)
+
 ## Should be called each tick
-@abstract func _on_tick() -> void
+@abstract func _on_tick(tick: int) -> void
 
 ## Handles receiving data from network
 @abstract func _decode(tick: int, data: PackedByteArray) -> void
