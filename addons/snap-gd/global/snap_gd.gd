@@ -34,8 +34,13 @@ func _on_tick(tick: int) -> void:
 
 ## Called to decode snapshot
 func _decode(tick: int, data: PackedByteArray) -> void:
+	var offset: int = 0
+	var result: int 
 	for n in managed_nodes.size(): if _call_encode_decode[n]:
-		managed_nodes[n].call(&"_decode", tick, data)
+		result = managed_nodes[n].call(&"_decode", tick, data, offset)
+		if result == -1: # Error occured
+			break # Stop decoding, we can't verify offset of future nodes
+		offset += result
 
 ## Called to encode snapshot
 func _encode(tick: int) -> PackedByteArray:

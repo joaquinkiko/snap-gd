@@ -18,11 +18,31 @@ func _enter_tree() -> void:
 	super._enter_tree()
 
 func _on_tick(tick: int) -> void:
-	pass
+	if multiplayer.is_server():
+		# Record current tick
+		var snap := get_snapshot(tick)
+		snap.tick = tick
+		snap.capture()
+	elif is_multiplayer_authority():
+		pass # Reconcile state
+	else:
+		pass # Interpolate state
 
-func _decode(tick: int, data: PackedByteArray) -> void:
-	pass
-
-func _encode(tick: int) -> PackedByteArray:
-	var data: PackedByteArray
+func _encode(tick: int, peer: int = -1) -> PackedByteArray:
+	if not (multiplayer.is_server() and has_snapshot(tick)):
+		return [] # Nothing to encode
+	var snap := get_snapshot(tick)
+	var baseline := get_last_ack_snap(peer)
+	var data := snap.encode(baseline, 0)
 	return data
+
+func _decode(tick: int, data: PackedByteArray, offset: int = 0) -> int:
+	if multiplayer.is_server() or data.size() < offset:
+		return -1 # This is invalid data
+	var baseline_tick: int = _last_ack_tick.get(1, 0) # This SHOULD match server... need to verify
+	var snap := get_snapshot(tick)
+	var baseline := get_snapshot(baseline_tick)
+	if baseline.tick != baseline_tick:
+		baseline = _initial_snap
+	snap.tick = tick
+	return snap.decode(data, offset, baseline, 0) + offset
